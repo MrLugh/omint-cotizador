@@ -1,0 +1,121 @@
+<ion-view view-title="Cotizar">
+	<ion-content>
+
+		<div class="tabs" style="position: relative;top: 0;">
+			<a ng-repeat="(key,tab) in tabs" ng-click="showTab(key)" ng-class="{active: tab.activo}" class="tab-item">
+		    	{{tab.label}}
+		  	</a>
+		</div>
+
+		<div ng-show="tabs.calculadora.activo" class="card list">
+			<div class="item item-button-right item-positive">
+				Calculadora
+				<button ng-show="aportes.length" ng-click="borrarAportesUi()" class="button button-positive">
+					<i class="icon ion-refresh"></i>
+				</button>
+			</div>
+
+			<div class="item item-toggle">
+				Aporta?
+				<label class="toggle toggle-positive">
+					<input type="checkbox" name="aporta" ng-model="aporta">
+					<div class="track">
+						<div class="handle"></div>
+					</div>
+				</label>
+			</div>
+
+			<div ng-show="!aporta" class="item item-toggle">
+				Hijo menor de {{omintData.calculadora.edadMenor}}?
+				<label class="toggle toggle-positive">
+					<input type="checkbox" name="model.esMenor" ng-model="model.esMenor">
+					<div class="track">
+						<div class="handle"></div>
+					</div>
+				</label>
+			</div>
+
+			<label ng-show="aporta" class="item item-input item-stacked-label">
+				<div class="input-label">
+					Suma de aportes del recibo
+				</div>
+				<input name="model.aportes" ng-model="model.aportes" type="number" min="0.01" step="0.01" placeholder="Aportes Ejemplo: 1250.66">
+			</label>
+
+			<label class="item item-input item-select">
+				<div class="input-label">
+					Edad
+				</div>
+				<select name="model.edad" ng-model="model.edad" ng-options="n for n in range(1,model.esMenor ? omintData.calculadora.edadMenor : 100)">
+					<option value="">Seleccione</option>
+				</select>
+			</label>
+			
+			<div ng-show="model.edad && (!aporta || aporta && model.aportes)" class="item">
+				<button ng-click="aportar()" class="button button-positive button-block button-small">
+					Agregar
+				</button>
+			</div>
+
+			<div class="item item-light">
+				Total de aportes
+				<span class="badge badge-balanced">${{totalAportes()|number:2}}</span>
+			</div>
+
+			<div ng-show="aportes.length" class="item item-button-right" ng-init="showPersonas = true" ng-click="showPersonas = !showPersonas" ng-class="{'item-light': showPersonas,active:showPersonas}">
+				<button class="button button-clear" ng-class="{'button-dark':showPersonas,'button-light':!showPersonas}">
+			  		<i class="icon {{showPersonas ? 'ion-chevron-down' : 'ion-chevron-right'}}"></i>
+				</button>
+				Grupo Familiar
+			</div>
+
+			<div ng-show="showPersonas && aportes.length" class="item item-button-left" ng-repeat="aporte in aportes">
+				{{getAporteLabel(aporte)}}
+				<button ng-click="borrarAporteUi(aporte)" class="button button-clear button-light">
+			  		<i class="icon ion-minus-circled"></i>
+				</button>
+			</div>
+
+		</div>
+
+		<div ng-show="tabs.cotizacion.activo" class="card list">
+			<div class="item item-positive">
+				Cotizacion por plan
+			</div>
+			<div ng-repeat="planCotizado in cotizacion">
+				<div class="item item-button-right" ng-init="showCotizacionItem" ng-class="{'item-light': showCotizacionItem,active:showCotizacionItem}">
+					<span class="badge badge-balanced ">${{planCotizado.total|number:2}}</span>
+					{{planCotizado.plan.nombre}}
+					<button ng-click="showCotizacionItem = !showCotizacionItem" class="button button-clear" ng-class="{'button-dark':showCotizacionItem,'button-light':!showCotizacionItem}">
+				  		<i class="icon ion-{{showCotizacionItem ? 'chevron-down':'chevron-right'}}"></i>
+					</button>
+				</div>
+				<div ng-show="showCotizacionItem" class="card list">
+					<div class="item item-divider">
+						Total Aportes
+						<span class="badge badge-balanced ">${{planCotizado.totalAportes|number:2}}</span>
+					</div>
+					<div ng-repeat="cotizacionItem in planCotizado.items" class="item">
+						{{cotizacionItem.aporte.esMenor? 'Hijo ':'Adulto '}}
+						({{cotizacionItem.aporte.edad}})
+						{{cotizacionItem.descuento? cotizacionItem.descuento+'%':''}}
+						<span class="badge badge-assertive">${{cotizacionItem.total|number:2}}</span>
+					</div>
+				</div>
+				<div ng-if="!$last" class="item item-divider">
+					&nbsp;
+				</div>
+			</div>
+			<div ng-show="!cotizacion.length" class="item item-button-right">
+				No hay grupo familiar para cotizar
+				<button ng-click="showTab('calculadora')" class="button button-light">
+					<i class="icon ion-calculator"></i>
+				</button>
+			</div>
+			<div ng-show="cotizacion.length" class="item item-divider">
+				&nbsp;
+			</div>
+		</div>
+
+	</ion-content>
+</ion-view>

@@ -1,0 +1,226 @@
+<ion-view view-title="Configuracion">
+	<ion-content>
+
+		<div class="tabs" style="position: relative;top: 0;">
+			<a ng-repeat="(key,tab) in tabs" ng-click="showTab(key)" ng-class="{active: tab.activo}" class="tab-item">
+		    	{{tab.label}}
+		  	</a>
+		</div>
+
+		<div ng-show="tabs.plan.activo" class="card list">
+			<div class="item item-button-right item-positive">
+				Planes: {{omintData.planes.length}}
+				<button ng-click="toggleShowPlan()" class="button button-positive">
+					<i class="icon {{showFormPlan ? 'ion-close':'ion-plus'}}"></i>
+				</button>
+			</div>
+			<div ng-show="showFormPlan">
+				<div class="item item-divider">
+					Agregar Plan
+				</div>
+				<label class="item item-input item-stacked-label">
+					<div class="input-label">
+						Nombre
+					</div>
+					<input type="text" name="model.plan.nombre" ng-model="model.plan.nombre" placeholder="Ejemplo: Genesis">
+				</label>
+				<label class="item item-input item-stacked-label">
+					<div class="input-label">
+						Descuento
+					</div>
+					<input type="number" name="model.plan.descuento" ng-model="model.plan.descuento"  min="0" step="0.01" placeholder="Ejemplo: 15">
+				</label>
+				<div ng-show="model.plan.nombre.length" class="item">
+					<button ng-click="crearPlan()" class="button button-block button-positive">
+						Agregar
+					</button>
+				</div>
+			</div>
+
+		  	<div id="plan-{{$index}}" ng-show="!showFormPlan" ng-repeat="plan in omintData.planes">
+				<div class="item item-button-left item-button-right" ng-init="showPlanItem" ng-class="{'item-light': showPlanItem,active:showPlanItem}">
+					<button ng-click="borrarPlanUi(plan)" class="button button-clear" ng-class="{'button-dark':showPlanItem,'button-light':!showPlanItem}">
+				  		<i class="icon ion-minus-circled"></i>
+					</button>
+					{{plan.nombre}}
+					<button ng-click="showPlanItem = !showPlanItem" class="button button-clear" ng-class="{'button-dark':showPlanItem,'button-light':!showPlanItem}">
+				  		<i class="icon ion-{{showPlanItem ? 'chevron-down':'chevron-right'}}"></i>
+					</button>
+				</div>
+
+				<div ng-show="showPlanItem" class="card list">
+
+					<div class="item item-divider">
+						Detalle del Plan
+					</div>
+
+					<div class="item item-button-left item-button-right" ng-init="showFormPlanItem">
+						<button ng-show="!showFormPlanItem" ng-click="editarPlanNombreUi(plan)" class="button button-clear button-light">
+					  		<i class="icon ion-edit"></i>
+						</button>
+						{{showFormPlanItem ? 'Nuevo plan':'Acciones del plan'}}
+						<button class="button button-clear button-light" ng-click="showFormPlanItem = !showFormPlanItem">
+							<i class="icon {{showFormPlanItem ? 'ion-close':'ion-plus'}}"></i>
+						</button>
+					</div>
+					<div ng-show="showFormPlanItem">
+						<div ng-show="!model.planItem.masDeUnHijoMenor" class="item item-toggle">
+							Es primer hijo menor a {{omintData.calculadora.edadMenor}}?
+							<label class="toggle toggle-positive">
+								<input type="checkbox" name="model.planItem.unHijoMenor" ng-model="model.planItem.unHijoMenor">
+								<div class="track">
+									<div class="handle"></div>
+								</div>
+							</label>
+						</div>
+						<div ng-show="!model.planItem.unHijoMenor" class="item item-toggle">
+							Otros hijos menores a {{omintData.calculadora.edadMenor}}?
+							<label class="toggle toggle-positive">
+								<input type="checkbox" name="model.planItem.masDeUnHijoMenor" ng-model="model.planItem.masDeUnHijoMenor">
+								<div class="track">
+									<div class="handle"></div>
+								</div>
+							</label>
+						</div>
+						<div ng-show="!model.planItem.unHijoMenor && !model.planItem.masDeUnHijoMenor">
+							<label class="item item-input item-select">
+								<div class="input-label">
+									Edad Inicial
+								</div>
+								<select name="model.planItem.edadInicial" ng-model="model.planItem.edadInicial" ng-options="n for n in range(1,150)">
+									<option value="">Seleccione</option>
+								</select>
+							</label>
+							<label class="item item-input item-select">
+								<div class="input-label">
+									Edad Final
+								</div>
+								<select name="model.planItem.edadFinal" ng-model="model.planItem.edadFinal" ng-options="n for n in range(1,150)">
+									<option value="">Seleccione</option>
+								</select>
+							</label>
+						</div>
+						<label class="item item-input item-stacked-label">
+							<div class="input-label">
+								Valor
+							</div>
+							<input type="number" name="model.planItem.valor" ng-model="model.planItem.valor" min="0.01" step="0.01" placeholder="Ejemplo: 1311.89">
+						</label>
+						<div ng-show="model.planItem.valor && (model.planItem.unHijoMenor || model.planItem.masDeUnHijoMenor || (model.planItem.edadFinal && model.planItem.edadInicial && model.planItem.valor))" class="item">
+							<button ng-click="crearPlanItem(plan);showFormPlanItem = !showFormPlanItem;" class="button button-block button-positive">
+								Agregar
+							</button>
+						</div>
+					</div>
+
+					<div ng-show="!showFormPlanItem" class="item item-button-right">
+						Descuento {{plan.descuento ? plan.descuento+'%' : ''}}
+						<button class="button button-clear button-light" ng-click="editarPlanDescuentoUi(plan)">
+							<i class="icon ion-edit"></i>
+						</button>
+					</div>
+		  			<div ng-show="!showFormPlanItem" class="item item-button-left item-button-right" ng-repeat="item in plan.items">
+		  				{{getPlanItemLabel(item)}}
+		  				<span class="badge badge-balanced">
+		  					${{item.valor|number:2}}&nbsp;
+		  				</span>
+						<button class="button button-clear button-light" ng-click="borrarPlanItemUi(plan,item)">
+							<i class="icon ion-minus-circled"></i>
+						</button>
+						<button class="button button-clear button-light" ng-click="editarPlanItemValorUi(plan,item)">
+							<i class="icon ion-edit"></i>
+						</button>						
+		  			</div>
+
+		  		</div>
+
+				<div ng-if="!$last" class="item item-divider">
+					&nbsp;
+				</div>
+
+		  	</div>
+		</div>
+
+		<div ng-show="tabs.calculadora.activo" class="card list">
+			<div class="item item-positive">
+		    	Calculadora
+		  	</div>
+			<span class="item item-divider">
+				Hasta que edad se considera menor? <span class="item-note">(inclusive)</span>
+			</span>
+			<label class="item item-input item-select">
+				<div class="input-label">
+					Edad Menor
+				</div>
+				<select name="model.calculadora.edadMenor" ng-model="model.calculadora.edadMenor" ng-options="n for n in range(1,150)">
+					<option value="">Seleccione</option>
+				</select>
+			</label>
+			<span class="item item-divider">
+				Edades para aplicar descuento <span class="item-note">(inclusive)</span>
+			</span>
+			<label class="item item-input item-select">
+				<div class="input-label">
+					Edad desde
+				</div>
+				<select name="model.calculadora.edadInicialDescuento" ng-model="model.calculadora.edadInicialDescuento" ng-options="n for n in range(1,150)">
+					<option value="">Seleccione</option>
+				</select>
+			</label>
+			<label class="item item-input item-select">
+				<div class="input-label">
+					Edad fin
+				</div>
+				<select name="model.calculadora.edadFinalDescuento" ng-model="model.calculadora.edadFinalDescuento" ng-options="n for n in range(1,150)">
+					<option value="">Seleccione</option>
+				</select>
+			</label>
+			<span class="item item-divider">
+				Valores de calculo
+			</span>
+		  	<label class="item item-input item-stacked-label">
+			    <div class="input-label">
+			    	Divisor
+			    </div>
+		    	<input type="number" name="model.calculadora.divisor" ng-model="model.calculadora.divisor" min="0.01" step="0.01" placeholder="Ejemplo: 0.03">
+		  	</label>
+		  	<label class="item item-input item-stacked-label">
+			    <div class="input-label">
+			    	Multiplicador
+			    </div>
+		    	<input type="number" name="model.calculadora.multiplicador" ng-model="model.calculadora.multiplicador" min="0.01" step="0.01" placeholder="Ejemplo: 7.458">
+		  	</label>
+			<div ng-show="model.calculadora.divisor && model.calculadora.multiplicador" class="item">
+				<button ng-click="guardarCalculador()" class="button button-block button-positive">
+					Guardar
+				</button>
+			</div>
+		</div>
+
+		<div ng-show="tabs.configuracion.activo" class="card list">
+			<div class="item item-positive">
+				Configuracion
+			</div>
+
+			<div class="item item-divider">
+				Exportar configuración
+			</div>
+			<div class="item">
+				<button ng-click="copiarConfiguracion()" class="button button-block button-positive">
+					Copiar configuración
+				</button>
+			</div>
+
+			<div class="item item-divider">
+				Importar configuración
+			</div>
+			<div class="item">
+				<textarea name="model.configuracion" ng-model="model.configuracion" rows="8" cols="10" placeholder="Pegue aquí su configuración" style="width:100%;border:1px solid grey;border-radius: 4px;"></textarea>			
+				<button ng-show="model.configuracion.length" ng-click="importarConfiguracion()" class="button button-block button-positive">
+					Importar configuración
+				</button>
+			</div>
+		</div>
+
+	</ion-content>
+</ion-view>
